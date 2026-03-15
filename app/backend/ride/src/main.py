@@ -1,23 +1,21 @@
 from datetime import datetime
 
-from flask import Flask, jsonify, request
+from fastapi import FastAPI
 
-app = Flask(__name__)
-
+app = FastAPI()
 
 # calculate ride price
 @app.post("/calc")
-def calc():
+def calculate_ride_price(body: list[dict]):
     result = 0
-
-    for mov in request.json:
+    for mov in body:
         try:
             mov["ds"] = datetime.fromisoformat(str(mov.get("ds")).replace("Z", "+00:00"))
         except Exception:
             mov["ds"] = None
 
-        if mov.get("dist") is not None and mov.get("dist") is not None and isinstance(mov.get("dist"), (int, float)) and mov.get("dist") > 0:
-            if mov.get("ds") is not None and mov.get("ds") is not None and isinstance(mov.get("ds"), datetime):
+        if mov.get("dist") is not None and isinstance(mov.get("dist"), (int, float)) and mov.get("dist") > 0:
+            if mov.get("ds") is not None and isinstance(mov.get("ds"), datetime):
                 # overnight
                 if mov["ds"].hour >= 22 or mov["ds"].hour <= 6:
                     # not sunday
@@ -33,15 +31,17 @@ def calc():
                     else:
                         result += mov["dist"] * 2.10
             else:
-                return jsonify({"result": -2})
+                return {"result": -2}
         else:
-            return jsonify({"result": -1})
+            return {"result": -1}
 
     if result < 10:
         result = 10
 
-    return jsonify({"result": result})
+    return {"result": result}
 
 
 if __name__ == "__main__":
-    app.run(port=3000)
+    import uvicorn
+
+    uvicorn.run("src.main:app", host="0.0.0.0", port=3000, reload=True)
