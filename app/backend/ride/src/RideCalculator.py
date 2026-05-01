@@ -19,3 +19,20 @@ def isValidDistance(segment) -> bool:
 def isValidDate(segment) -> bool:
     """Return True if the segment date is valid (a datetime object)."""
     return segment.date is not None and isinstance(segment.date, datetime)
+
+def calculate(segments) -> float:
+    price = 0
+    for segment in segments:
+        if not isValidDistance(segment): return -1
+        if not isValidDate(segment):     return -2
+
+        if isOverNight(segment) and not isSunday(segment):
+            price += segment.distance * 3.90
+        if isOverNight(segment) and isSunday(segment):
+            price += segment.distance * 5
+        if not isOverNight(segment) and isSunday(segment):
+            price += segment.distance * 2.9
+        if not isOverNight(segment) and not isSunday(segment):
+            price += segment.distance * 2.10
+
+    return 10 if price < 10 else price

@@ -1,39 +1,14 @@
 import uvicorn
 from fastapi import FastAPI
 
-from datetime import datetime
-from typing import List, Optional
-from pydantic import BaseModel
-
-from src.RideCalculator import *
-
-class Segment(BaseModel):
-    distance: Optional[float] = None
-    date: Optional[datetime] = None
-
-class RideRequest(BaseModel):
-    segments: List[Segment]
+from src.RideCalculator import calculate
+from src.models import RideRequest
 
 app = FastAPI()
 
 @app.post("/calculate_ride_price")
 def calculate_ride_price(request: RideRequest):
-    price = 0
-    for segment in request.segments:
-        if not isValidDistance(segment): return {"price": -1}
-        if not isValidDate(segment):     return {"price": -2}
-
-        if isOverNight(segment) and not isSunday(segment):
-            price += segment.distance * 3.90
-        if isOverNight(segment) and isSunday(segment):
-            price += segment.distance * 5
-        if not isOverNight(segment) and isSunday(segment):
-            price += segment.distance * 2.9
-        if not isOverNight(segment) and not isSunday(segment):
-            price += segment.distance * 2.10
-
-    price = 10 if price < 10 else price
-
+    price = calculate(request.segments)
     return {"price": price}
 
 
