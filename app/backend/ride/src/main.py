@@ -3,8 +3,8 @@ from fastapi import FastAPI
 
 from datetime import datetime
 from typing import List, Optional
-
 from pydantic import BaseModel
+
 from src.RideCalculator import *
 
 class Segment(BaseModel):
@@ -20,29 +20,19 @@ app = FastAPI()
 def calculate_ride_price(request: RideRequest):
     price = 0
     for segment in request.segments:
-        # validate distance
-        if segment.distance is None or not isinstance(segment.distance, (int, float)) or segment.distance <= 0:
-            return {"price": -1}
+        if not isValidDistance(segment): return {"price": -1}
+        if not isValidDate(segment):     return {"price": -2}
 
-        # validate date
-        if segment.date is None or not isinstance(segment.date, datetime):
-            return {"price": -2}
+        if isOverNight(segment) and not isSunday(segment):
+            price += segment.distance * 3.90
+        if isOverNight(segment) and isSunday(segment):
+            price += segment.distance * 5
+        if not isOverNight(segment) and isSunday(segment):
+            price += segment.distance * 2.9
+        if not isOverNight(segment) and not isSunday(segment):
+            price += segment.distance * 2.10
 
-        dt = segment.date
-
-        if isOverNight(segment):
-            if not isSunday(segment):
-                price += segment.distance * 3.90
-            else:
-                price += segment.distance * 5
-        else:
-            if isSunday(segment):
-                price += segment.distance * 2.9
-            else:
-                price += segment.distance * 2.10
-
-    if price < 10:
-        price = 10
+    price = 10 if price < 10 else price
 
     return {"price": price}
 
