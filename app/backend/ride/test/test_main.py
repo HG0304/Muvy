@@ -96,3 +96,22 @@ def test_invalid_distanceance():
     # assert
     assert response.status_code == 200
     assert output["price"] == -1
+
+def test_price_below_minimum():
+    # given
+    input_data = {
+        "segments": [{
+            "distance": 1,
+            "date": "2026-03-15T08:00:00"
+        }]
+    }
+
+    # when
+    response = httpx.post("http://localhost:3000/calculate_ride_price", json=input_data, timeout=5)
+    output = response.json()
+
+    print(output)
+
+    # assert
+    assert response.status_code == 200
+    assert output["price"] == 10
