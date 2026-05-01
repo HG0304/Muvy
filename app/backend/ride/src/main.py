@@ -1,44 +1,54 @@
 from datetime import datetime
+from typing import List, Optional
 
 from fastapi import FastAPI
+from pydantic import BaseModel
+
+
+class Segment(BaseModel):
+    distance: Optional[float] = None
+    date: Optional[datetime] = None
+
+
+class RideRequest(BaseModel):
+    segments: List[Segment]
+
 
 app = FastAPI()
 
-# calculate ride price
-@app.post("/calc")
-def calculate_ride_price(body: list[dict]):
-    result = 0
-    for mov in body:
-        try:
-            mov["ds"] = datetime.fromisoformat(str(mov.get("ds")).replace("Z", "+00:00"))
-        except Exception:
-            mov["ds"] = None
+@app.post("/calculate_ride_price")
+def calculate_ride_price(request: RideRequest):
+    price = 0
+    for segment in request.segments:
+        # validate distance
+        if segment.distance is None or not isinstance(segment.distance, (int, float)) or segment.distance <= 0:
+            return {"price": -1}
 
-        if mov.get("dist") is not None and isinstance(mov.get("dist"), (int, float)) and mov.get("dist") > 0:
-            if mov.get("ds") is not None and isinstance(mov.get("ds"), datetime):
-                # overnight
-                if mov["ds"].hour >= 22 or mov["ds"].hour <= 6:
-                    # not sunday
-                    if mov["ds"].weekday() != 6:
-                        result += mov["dist"] * 3.90
-                    # sunday
-                    else:
-                        result += mov["dist"] * 5
-                else:
-                    # sunday
-                    if mov["ds"].weekday() == 6:
-                        result += mov["dist"] * 2.9
-                    else:
-                        result += mov["dist"] * 2.10
+        # validate date
+        if segment.date is None or not isinstance(segment.date, datetime):
+            return {"price": -2}
+
+        dt = segment.date
+
+        # overnight
+        if dt.hour >= 22 or dt.hour <= 6:
+            # not sunday
+            if dt.weekday() != 6:
+                price += segment.distance * 3.90
+            # sunday
             else:
-                return {"result": -2}
+                price += segment.distance * 5
         else:
-            return {"result": -1}
+            # sunday
+            if dt.weekday() == 6:
+                price += segment.distance * 2.9
+            else:
+                price += segment.distance * 2.10
 
-    if result < 10:
-        result = 10
+    if price < 10:
+        price = 10
 
-    return {"result": result}
+    return {"price": price}
 
 
 if __name__ == "__main__":
