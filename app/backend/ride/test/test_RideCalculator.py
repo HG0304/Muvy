@@ -1,7 +1,9 @@
 from datetime import datetime
+import pytest
+from pydantic import ValidationError
 
 from src.RideCalculator import calculate
-from src.models import Segment
+from src.Segments import Segment
 
 def test_ride_price_on_not_sundays_day():
     # given
@@ -44,14 +46,8 @@ def test_ride_price_on_sundays_night():
     assert price == 50
 
 def test_invalid_distanceance():
-    # given
-    segments = [Segment(distance=-10, date=datetime.strptime("2026-03-15T08:00:00", "%Y-%m-%dT%H:%M:%S"))]
-
-    # when
-    price = calculate(segments)
-
-    # assert
-    assert price == -1
+    with pytest.raises(ValidationError):
+        Segment(distance=-10, date=datetime.strptime("2026-03-15T08:00:00", "%Y-%m-%dT%H:%M:%S"))
 
 def test_price_below_minimum():
     # given
