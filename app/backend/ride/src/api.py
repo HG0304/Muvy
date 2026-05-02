@@ -1,7 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
 
-from .RideCalculator import calculate
 from .Segments import RideRequest
 from .Ride import Ride
 

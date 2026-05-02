@@ -16,8 +16,7 @@ Em linhas gerais (mais detalhes serão informados ao longo do projeto):
 - O passageiro digita as coordenadas de origem e destino e solicita a corrida.
 - O motorista visualiza os dados da corrida e pode aceitá-la.
 - Após aceite, o passageiro aguarda pelo motorista.
-- Ao chegar, o motorista inicia a corrida.
-- Durante a corrida, o trajeto vai sendo atualizado com os trechos percorridos, atualizando também o preço.
+- Ao chegar, o motorista inicia a corrida e durante a corrida, o trajeto vai sendo atualizado com os trechos percorridos, atualizando também o preço.
 - No final, o motorista finaliza a corrida e o pagamento é processado.
 - O motorista pode avaliar o passageiro depois da corrida finalizada.
 - O passageiro pode avaliar o motorista depois da corrida finalizada.
